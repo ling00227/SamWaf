@@ -32,31 +32,32 @@ func (receiver *WafHostService) AddApi(wafHostAddReq request.WafHostAddReq) (str
 			CREATE_TIME: customtype.JsonTime(time.Now()),
 			UPDATE_TIME: customtype.JsonTime(time.Now()),
 		},
-		Code:                uniCode,
-		Host:                wafHostAddReq.Host,
-		Port:                wafHostAddReq.Port,
-		Ssl:                 wafHostAddReq.Ssl,
-		GUARD_STATUS:        1,
-		REMOTE_SYSTEM:       wafHostAddReq.REMOTE_SYSTEM,
-		REMOTE_APP:          wafHostAddReq.REMOTE_APP,
-		Remote_host:         wafHostAddReq.Remote_host,
-		Remote_port:         wafHostAddReq.Remote_port,
-		Remote_ip:           wafHostAddReq.Remote_ip,
-		Certfile:            wafHostAddReq.Certfile,
-		Keyfile:             wafHostAddReq.Keyfile,
-		REMARKS:             wafHostAddReq.REMARKS,
-		GLOBAL_HOST:         0,
-		DEFENSE_JSON:        wafHostAddReq.DEFENSE_JSON,
-		START_STATUS:        wafHostAddReq.START_STATUS,
-		EXCLUDE_URL_LOG:     wafHostAddReq.EXCLUDE_URL_LOG,
-		IsEnableLoadBalance: wafHostAddReq.IsEnableLoadBalance,
-		LoadBalanceStage:    wafHostAddReq.LoadBalanceStage,
-		UnrestrictedPort:    wafHostAddReq.UnrestrictedPort,
-		BindSslId:           wafHostAddReq.BindSslId,
-		AutoJumpHTTPS:       wafHostAddReq.AutoJumpHTTPS,
-		BindMoreHost:        wafHostAddReq.BindMoreHost,
-		IsTransBackDomain:   wafHostAddReq.IsTransBackDomain,
-		BindMorePort:        wafHostAddReq.BindMorePort,
+		Code:                 uniCode,
+		Host:                 wafHostAddReq.Host,
+		Port:                 wafHostAddReq.Port,
+		Ssl:                  wafHostAddReq.Ssl,
+		GUARD_STATUS:         1,
+		REMOTE_SYSTEM:        wafHostAddReq.REMOTE_SYSTEM,
+		REMOTE_APP:           wafHostAddReq.REMOTE_APP,
+		Remote_host:          wafHostAddReq.Remote_host,
+		Remote_port:          wafHostAddReq.Remote_port,
+		Remote_ip:            wafHostAddReq.Remote_ip,
+		Certfile:             wafHostAddReq.Certfile,
+		Keyfile:              wafHostAddReq.Keyfile,
+		REMARKS:              wafHostAddReq.REMARKS,
+		GLOBAL_HOST:          0,
+		DEFENSE_JSON:         wafHostAddReq.DEFENSE_JSON,
+		START_STATUS:         wafHostAddReq.START_STATUS,
+		EXCLUDE_URL_LOG:      wafHostAddReq.EXCLUDE_URL_LOG,
+		IsEnableLoadBalance:  wafHostAddReq.IsEnableLoadBalance,
+		LoadBalanceStage:     wafHostAddReq.LoadBalanceStage,
+		UnrestrictedPort:     wafHostAddReq.UnrestrictedPort,
+		BindSslId:            wafHostAddReq.BindSslId,
+		AutoJumpHTTPS:        wafHostAddReq.AutoJumpHTTPS,
+		BindMoreHost:         wafHostAddReq.BindMoreHost,
+		IsTransBackDomain:    wafHostAddReq.IsTransBackDomain,
+		BindMorePort:         wafHostAddReq.BindMorePort,
+		IsEnableHttpAuthBase: wafHostAddReq.IsEnableHttpAuthBase,
 	}
 	global.GWAF_LOCAL_DB.Create(wafHost)
 	return wafHost.Code, nil
@@ -83,27 +84,28 @@ func (receiver *WafHostService) ModifyApi(wafHostEditReq request.WafHostEditReq)
 		"Port": wafHostEditReq.Port,
 		"Ssl":  wafHostEditReq.Ssl,
 		//"GUARD_STATUS":  0,
-		"REMOTE_SYSTEM":       wafHostEditReq.REMOTE_SYSTEM,
-		"REMOTE_APP":          wafHostEditReq.REMOTE_APP,
-		"Remote_host":         wafHostEditReq.Remote_host,
-		"Remote_ip":           wafHostEditReq.Remote_ip,
-		"Remote_port":         wafHostEditReq.Remote_port,
-		"REMARKS":             wafHostEditReq.REMARKS,
-		"GLOBAL_HOST":         0,
-		"Certfile":            wafHostEditReq.Certfile,
-		"Keyfile":             wafHostEditReq.Keyfile,
-		"UPDATE_TIME":         customtype.JsonTime(time.Now()),
-		"DEFENSE_JSON":        wafHostEditReq.DEFENSE_JSON,
-		"START_STATUS":        wafHostEditReq.START_STATUS,
-		"EXCLUDE_URL_LOG":     wafHostEditReq.EXCLUDE_URL_LOG,
-		"IsEnableLoadBalance": wafHostEditReq.IsEnableLoadBalance,
-		"LoadBalanceStage":    wafHostEditReq.LoadBalanceStage,
-		"UnrestrictedPort":    wafHostEditReq.UnrestrictedPort,
-		"BindSslId":           wafHostEditReq.BindSslId,
-		"AutoJumpHTTPS":       wafHostEditReq.AutoJumpHTTPS,
-		"BindMoreHost":        wafHostEditReq.BindMoreHost,
-		"IsTransBackDomain":   wafHostEditReq.IsTransBackDomain,
-		"BindMorePort":        wafHostEditReq.BindMorePort,
+		"REMOTE_SYSTEM":        wafHostEditReq.REMOTE_SYSTEM,
+		"REMOTE_APP":           wafHostEditReq.REMOTE_APP,
+		"Remote_host":          wafHostEditReq.Remote_host,
+		"Remote_ip":            wafHostEditReq.Remote_ip,
+		"Remote_port":          wafHostEditReq.Remote_port,
+		"REMARKS":              wafHostEditReq.REMARKS,
+		"GLOBAL_HOST":          0,
+		"Certfile":             wafHostEditReq.Certfile,
+		"Keyfile":              wafHostEditReq.Keyfile,
+		"UPDATE_TIME":          customtype.JsonTime(time.Now()),
+		"DEFENSE_JSON":         wafHostEditReq.DEFENSE_JSON,
+		"START_STATUS":         wafHostEditReq.START_STATUS,
+		"EXCLUDE_URL_LOG":      wafHostEditReq.EXCLUDE_URL_LOG,
+		"IsEnableLoadBalance":  wafHostEditReq.IsEnableLoadBalance,
+		"LoadBalanceStage":     wafHostEditReq.LoadBalanceStage,
+		"UnrestrictedPort":     wafHostEditReq.UnrestrictedPort,
+		"BindSslId":            wafHostEditReq.BindSslId,
+		"AutoJumpHTTPS":        wafHostEditReq.AutoJumpHTTPS,
+		"BindMoreHost":         wafHostEditReq.BindMoreHost,
+		"IsTransBackDomain":    wafHostEditReq.IsTransBackDomain,
+		"BindMorePort":         wafHostEditReq.BindMorePort,
+		"IsEnableHttpAuthBase": wafHostEditReq.IsEnableHttpAuthBase,
 	}
 	err := global.GWAF_LOCAL_DB.Debug().Model(model.Hosts{}).Where("CODE=?", wafHostEditReq.CODE).Updates(hostMap).Error
 
@@ -204,6 +206,8 @@ func (receiver *WafHostService) DelHostApi(req request.WafHostDelReq) (model.Hos
 	err = global.GWAF_LOCAL_DB.Where("Host_Code = ?", req.CODE).Delete(model.IPAllowList{}).Error
 	//删除白名单URL
 	err = global.GWAF_LOCAL_DB.Where("Host_Code = ?", req.CODE).Delete(model.URLAllowList{}).Error
+	//删除用户名和密码访问
+	err = global.GWAF_LOCAL_DB.Where("Host_Code = ?", req.CODE).Delete(model.HttpAuthBase{}).Error
 	return webhost, err
 }
 func (receiver *WafHostService) ModifyGuardStatusApi(req request.WafHostGuardStatusReq) error {
@@ -302,6 +306,20 @@ func (receiver *WafHostService) isValidSortField(field string) bool {
 
 // 查询所有SSL证书的
 func (receiver *WafHostService) GetAllSSLHost() ([]model.Hosts, int64, error) {
+	var list []model.Hosts
+	var total int64 = 0
+
+	/**排序*/
+	orderInfo := "create_time desc"
+
+	global.GWAF_LOCAL_DB.Model(&model.Hosts{}).Where("ssl =? ", 1).Order(orderInfo).Find(&list)
+	global.GWAF_LOCAL_DB.Model(&model.Hosts{}).Where("ssl =? ", 1).Count(&total)
+
+	return list, total, nil
+}
+
+// 查询所有SSL证书的(只看绑定过的主机信息)
+func (receiver *WafHostService) GetAllSSLBindHost() ([]model.Hosts, int64, error) {
 	var list []model.Hosts
 	var total int64 = 0
 

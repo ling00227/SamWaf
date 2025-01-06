@@ -25,7 +25,7 @@ type SslConfig struct {
 	CertPath    string    `json:"cert_path"`    //crt文件配置
 }
 
-// 获取到期提示信息
+// ExpirationMessage 获取到期提示信息
 func (s *SslConfig) ExpirationMessage() string {
 	now := time.Now()
 	daysLeft := s.ValidTo.Sub(now).Hours() / 24
@@ -100,6 +100,11 @@ func (s *SslConfig) CheckKeyAndCertFileLoad() (error, SslConfig, SslConfig) {
 	if daysLeft <= 0 {
 		return errors.New("路径下的文件已经过期，不加载"), SslConfig{}, SslConfig{}
 	}
+	//现有证书大于路径下的也不进行更新
+	if s.ValidTo.After(validTo) {
+		return errors.New("现有证书到期时间大于路径下的到期时间也不进行更新"), SslConfig{}, SslConfig{}
+	}
+
 	updateSslConfig := *s
 	backSslConfig := *s
 
