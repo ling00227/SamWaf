@@ -51,9 +51,14 @@ func GetCurrentDir() string {
 func GetServerByHosts(hosts model.Hosts) string {
 	if hosts.Ssl == 1 {
 		return "https"
-	} else {
+	}
+	if hosts.Ssl == 0 {
 		return "http"
 	}
+	if hosts.Ssl == 2 {
+		return "tcp"
+	}
+	return ""
 }
 
 /*
