@@ -45,6 +45,12 @@ func setConfigIntValue(name string, value int64, change int) {
 	case "sslorder_expire_day":
 		global.GCONFIG_RECORD_SSLOrder_EXPIRE_DAY = value
 		break
+	case "connect_time_out":
+		global.GCONFIG_RECORD_CONNECT_TIME_OUT = value
+		break
+	case "keepalive_time_out":
+		global.GCONFIG_RECORD_KEEPALIVE_TIME_OUT = value
+		break
 	default:
 		zlog.Warn("Unknown config item:", name)
 	}
@@ -114,7 +120,14 @@ func updateConfigStringItem(initLoad bool, itemClass string, itemName string, de
 	}
 }
 
-// 加载配置数据
+// TaskLoadSettingCron 不是初始化加载
+func TaskLoadSettingCron() {
+	TaskLoadSetting(false)
+}
+
+// TaskLoadSetting 加载配置数据
+//
+//	initLoad true 是初始化加载，false不是初始化加载
 func TaskLoadSetting(initLoad bool) {
 	zlog.Debug("TaskLoadSetting")
 	updateConfigIntItem(initLoad, "system", "record_max_req_body_length", global.GCONFIG_RECORD_MAX_BODY_LENGTH, "记录请求最大报文", "int", "")
@@ -141,5 +154,8 @@ func TaskLoadSetting(initLoad bool) {
 
 	updateConfigIntItem(initLoad, "ssl", "enable_http_80", global.GCONFIG_RECORD_ENABLE_HTTP_80, "启动80端口服务（为自动申请证书使用 HTTP文件验证类型需要，DNS验证不需要）", "int", "")
 	updateConfigIntItem(initLoad, "ssl", "sslorder_expire_day", global.GCONFIG_RECORD_SSLOrder_EXPIRE_DAY, "自动续期检测小于多少天开始发起自动申请 默认30天", "int", "")
+
+	updateConfigIntItem(initLoad, "network", "connect_time_out", global.GCONFIG_RECORD_CONNECT_TIME_OUT, "连接超时（默认30s）", "int", "")
+	updateConfigIntItem(initLoad, "network", "keepalive_time_out", global.GCONFIG_RECORD_KEEPALIVE_TIME_OUT, "保持活动超时（默认30s）", "int", "")
 
 }

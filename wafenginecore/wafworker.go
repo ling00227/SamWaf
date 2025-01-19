@@ -36,31 +36,7 @@ func (waf *WafEngine) LoadHost(inHost model.Hosts) []innerbean.ServerRunTime {
 
 	//检测https
 	if inHost.Ssl == 1 {
-		/*dirPath := filepath.Join(utils.GetCurrentDir(), "ssl", "host", inHost.Id)
-		// 检查目录是否存在
-		if _, err := os.Stat(dirPath); os.IsNotExist(err) {
-			// 创建目录
-			err := os.MkdirAll(dirPath, os.ModePerm)
-			if err != nil {
-				zlog.Error("failed to create directory:", err.Error())
-			}
-		}
-		keyFilePath := filepath.Join(dirPath, "domain.key")
-		certFilePath := filepath.Join(dirPath, "domain.crt")
-
-		// 检查 key 文件
-		if err := utils.UpdateFileIsHasNewInfo(keyFilePath, inHost.Keyfile); err != nil {
-			zlog.Error("failed to write key file: ", err.Error())
-		}
-
-		// 检查 cert 文件
-		if err := utils.UpdateFileIsHasNewInfo(certFilePath, inHost.Certfile); err != nil {
-			zlog.Error("failed to write key file: ", err.Error())
-		}
-		//waf.AllCertificate.LoadSSLByFilePath(inHost.Host, certFilePath, keyFilePath)
-		*/
 		waf.AllCertificate.LoadSSL(inHost.Host, inHost.Certfile, inHost.Keyfile)
-
 	}
 	if inHost.GLOBAL_HOST == 1 {
 		global.GWAF_GLOBAL_HOST_CODE = inHost.Code
@@ -296,6 +272,12 @@ func (waf *WafEngine) RemoveHost(host model.Hosts) {
 	delete(waf.HostTarget, host.Host+":"+strconv.Itoa(host.Port))
 	//c.移除某个端口下的证书数据
 	waf.AllCertificate.RemoveSSL(host.Host)
+	//d.删除更多内容里面域名信息
+	for moreHost, hostCode := range waf.HostTargetMoreDomain {
+		if hostCode == host.Code {
+			delete(waf.HostTargetMoreDomain, moreHost)
+		}
+	}
 	//检测如果端口已经没有关联服务就直接关闭掉
 	waf.RemovePortServer()
 }
