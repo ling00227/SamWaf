@@ -66,6 +66,7 @@ var (
 	GWAF_RELEASE_VERSION_NAME    string              = "20241028"  // 发行版的版本号名称
 	GWAF_RELEASE_VERSION         string              = "v1.0.0"    // 发行版的版本号
 	GWAF_LAST_UPDATE_TIME        time.Time                         // 上次时间
+	GWAF_LAST_TIME_UNIX          int64               = 0           // 上次时间戳
 	GWAF_NOTICE_ENABLE           bool                = false       // 是否开启通知
 	GWAF_CAN_EXPORT_DOWNLOAD_LOG bool                = false       //是否可以导出下载日志
 	GWAF_DLP                     dlpheader.EngineAPI               // 脱敏引擎
@@ -107,6 +108,8 @@ var (
 	GNOTIFY_KAKFA_SERVICE           *wafnotify.WafNotifyService                                  //通知服务
 	GNOTIFY_SEND_MAX_LIMIT_MINTUTES                             = time.Duration(5) * time.Minute // 规则相关信息最大发送抑止 默认5分钟
 
+	/*******日志记录相关*************/
+	GWEBLOG_VERSION = 20250112 //weblog 日志版本号
 	/*********SSL相关*************/
 	GSSL_HTTP_CHANGLE_PATH string = "/.well-known/acme-challenge/" // http01证书验证路径
 
