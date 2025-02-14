@@ -8,6 +8,7 @@ import (
 	"SamWaf/wafmangeweb/static"
 	"context"
 	"errors"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -61,6 +62,8 @@ func (web *WafWebManager) initRouter(r *gin.Engine) {
 		router.ApiGroupApp.InitWafSslExpireRouter(RouterGroup)
 		router.ApiGroupApp.InitWafHttpAuthBaseRouter(RouterGroup)
 		router.ApiGroupApp.InitWafTaskRouter(RouterGroup)
+		router.ApiGroupApp.InitWafBlockingPageRouter(RouterGroup)
+
 	}
 	//r.Use(middleware.GinGlobalExceptionMiddleWare())
 	if global.GWAF_RELEASE == "true" {
@@ -70,6 +73,25 @@ func (web *WafWebManager) initRouter(r *gin.Engine) {
 		zlog.Info(web.LogName, "use static asset")
 	} else {
 		zlog.Info(web.LogName, "no use static asset")
+	}
+
+	//性能检测部分
+	if global.GCONFIG_RECORD_DEBUG_ENABLE == 1 {
+		zlog.Info(web.LogName, "Debug On")
+		debugGroup := r.Group("/debug", func(c *gin.Context) {
+			if global.GCONFIG_RECORD_DEBUG_ENABLE == 0 {
+				c.AbortWithStatus(http.StatusForbidden)
+				return
+			}
+			if global.GCONFIG_RECORD_DEBUG_PWD != "" {
+				if c.Request.Header.Get("Authorization") != global.GCONFIG_RECORD_DEBUG_PWD {
+					c.AbortWithStatus(http.StatusForbidden)
+					return
+				}
+			}
+			c.Next()
+		})
+		pprof.RouteRegister(debugGroup, "pprof")
 	}
 
 }

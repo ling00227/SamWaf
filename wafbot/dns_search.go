@@ -1,16 +1,14 @@
 package wafbot
 
 import (
-	"SamWaf/common/zlog"
 	"SamWaf/global"
 	"context"
-	"fmt"
 	"net"
 	"time"
 )
 
 func ReverseDNSLookup(ipAddress string) ([]string, error) {
-	startTime := time.Now()
+	//startTime := time.Now()
 
 	ctx := context.Background()
 	d := net.Dialer{Resolver: &net.Resolver{
@@ -19,20 +17,16 @@ func ReverseDNSLookup(ipAddress string) ([]string, error) {
 			return net.Dial("udp", global.GWAF_RUNTIME_DNS_SERVER+":53")
 		},
 	}}
-	ctxWithTimeout, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, time.Duration(global.GWAF_RUNTIME_DNS_TIMEOUT)*time.Millisecond)
 	defer cancel()
 	names, err := d.Resolver.LookupAddr(ctxWithTimeout, ipAddress)
 
-	elapsed := time.Since(startTime)
+	//elapsed := time.Since(startTime)
 
-	zlog.Debug("搜索引擎查询耗时", elapsed.String())
+	//zlog.Debug("搜索引擎查询耗时", elapsed.String())
 	if err != nil {
-		return nil, fmt.Errorf("逆向 DNS 查询失败: %s", err)
+		return nil, err
 	}
-
-	if len(names) == 0 {
-		return nil, fmt.Errorf("未找到与该 IP 地址关联的域名")
-	}
-
 	return names, nil
 }

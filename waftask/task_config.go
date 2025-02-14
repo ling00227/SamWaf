@@ -54,6 +54,18 @@ func setConfigIntValue(name string, value int64, change int) {
 	case "record_all_src_byte_info":
 		global.GCONFIG_RECORD_ALL_SRC_BYTE_INFO = value
 		break
+	case "token_expire_time":
+		global.GCONFIG_RECORD_TOKEN_EXPIRE_MINTUTES = value
+		break
+	case "spider_deny":
+		global.GCONFIG_RECORD_SPIDER_DENY = value
+		break
+	case "enable_debug":
+		global.GCONFIG_RECORD_DEBUG_ENABLE = value
+		break
+	case "dns_timeout":
+		global.GWAF_RUNTIME_DNS_TIMEOUT = value
+		break
 	default:
 		zlog.Warn("Unknown config item:", name)
 	}
@@ -76,6 +88,9 @@ func setConfigStringValue(name string, value string, change int) {
 		global.GCONFIG_RECORD_KAFKA_URL = value
 	case "kafka_topic":
 		global.GCONFIG_RECORD_KAFKA_TOPIC = value
+	case "debug_pwd":
+		global.GCONFIG_RECORD_DEBUG_PWD = value
+
 	default:
 		zlog.Warn("Unknown config item:", name)
 	}
@@ -141,6 +156,8 @@ func TaskLoadSetting(initLoad bool) {
 	updateConfigIntItem(initLoad, "system", "auto_load_ssl_file", global.GCONFIG_RECORD_AUTO_LOAD_SSL, "是否每天凌晨3点自动加载ssl证书", "int", "")
 
 	updateConfigStringItem(initLoad, "system", "dns_server", global.GWAF_RUNTIME_DNS_SERVER, "DNS服务器", "options", "119.29.29.29|腾讯DNS,8.8.8.8|谷歌DNS")
+	updateConfigIntItem(initLoad, "system", "dns_timeout", global.GWAF_RUNTIME_DNS_TIMEOUT, "DNS 查询超时时间 单位毫秒", "int", "")
+
 	updateConfigStringItem(initLoad, "system", "record_log_type", global.GWAF_RUNTIME_RECORD_LOG_TYPE, "日志记录类型", "options", "all|全部,abnormal|非正常")
 	updateConfigStringItem(initLoad, "system", "gwaf_center_enable", global.GWAF_CENTER_ENABLE, "中心开关", "bool", "false|关闭,true|开启")
 	updateConfigStringItem(initLoad, "system", "gwaf_center_url", global.GWAF_CENTER_URL, "中心URL", "string", "")
@@ -162,5 +179,9 @@ func TaskLoadSetting(initLoad bool) {
 	updateConfigIntItem(initLoad, "network", "keepalive_time_out", global.GCONFIG_RECORD_KEEPALIVE_TIME_OUT, "保持活动超时（默认30s）", "int", "")
 
 	updateConfigIntItem(initLoad, "system", "record_all_src_byte_info", global.GCONFIG_RECORD_ALL_SRC_BYTE_INFO, "启动记录原始请求BODY报文（1启动 0关闭）", "int", "")
+	updateConfigIntItem(initLoad, "system", "token_expire_time", global.GCONFIG_RECORD_TOKEN_EXPIRE_MINTUTES, "管理平台令牌有效期，单位分钟（默认5分钟）", "int", "")
+	updateConfigIntItem(initLoad, "system", "spider_deny", global.GCONFIG_RECORD_SPIDER_DENY, "爬虫禁止访问开关 默认 0 只检测不阻止访问 1 检测并阻止访问）", "int", "")
+	updateConfigIntItem(initLoad, "debug", "enable_debug", global.GCONFIG_RECORD_DEBUG_ENABLE, "调试开关 默认关闭", "int", "")
+	updateConfigStringItem(initLoad, "debug", "debug_pwd", global.GCONFIG_RECORD_DEBUG_PWD, "调试密码 如果未空则不需要密码", "string", "")
 
 }

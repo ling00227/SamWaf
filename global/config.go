@@ -23,4 +23,13 @@ var (
 	//GCONFIG_RECORD_PATCH_VERSION_CORE  int64 = 20250106 // 核心数据库补丁日期
 	//GCONFIG_RECORD_PATCH_VERSION_LOG   int64 = 20250106 // 日志数据库补丁日期
 	GCONFIG_RECORD_ALL_SRC_BYTE_INFO int64 = 0 //记录原始信息(默认不开启)
+
+	GCONFIG_RECORD_TOKEN_EXPIRE_MINTUTES int64 = 5 //令牌有效期 单位分钟
+
+	GCONFIG_RECORD_DNS_BOT_EXPIRE_HOURS    int64 = 24     //DNS bot有效期 单位小时 默认1天
+	GCONFIG_RECORD_DNS_NORMAL_EXPIRE_HOURS int64 = 7 * 24 //DNS 正常有效期 单位小时 默认7天
+	GCONFIG_RECORD_SPIDER_DENY             int64 = 0      //爬虫禁止访问开关 默认 0 只检测不阻止访问 1 检测并阻止访问
+
+	GCONFIG_RECORD_DEBUG_ENABLE int64  = 0  //调试开关 默认关闭
+	GCONFIG_RECORD_DEBUG_PWD    string = "" //调试密码 如果未空则不需要密码
 )

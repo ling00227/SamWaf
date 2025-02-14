@@ -65,6 +65,9 @@ var publicKey string //公钥key
 //go:embed exedata/owasp
 var owaspAssets embed.FS
 
+//go:embed exedata/spiderbot
+var spiderBotAssets embed.FS
+
 // wafSystenService 实现了 service.Service 接口
 type wafSystenService struct{}
 
@@ -161,6 +164,9 @@ func (m *wafSystenService) run() {
 	if err != nil {
 		zlog.Error("owasp", err.Error())
 	}
+
+	//TODO 准备释放最新spider bot
+
 	/*// 启动一个 goroutine 来处理信号
 	go func() {
 		// 创建一个通道来接收信号
@@ -224,14 +230,6 @@ func (m *wafSystenService) run() {
 
 	if global.GWAF_RELEASE == "false" {
 		global.GUPDATE_VERSION_URL = "http://127.0.0.1:8111/"
-		/*runtime.GOMAXPROCS(1)              // 限制 CPU 使用数，避免过载
-		runtime.SetMutexProfileFraction(1) // 开启对锁调用的跟踪
-		runtime.SetBlockProfileRate(1)     // 开启对阻塞操作的跟踪*/
-		go func() {
-
-			err2 := http.ListenAndServe("0.0.0.0:16060", nil)
-			zlog.Error("调试报错", err2)
-		}()
 	}
 
 	//初始化本地数据库
@@ -492,6 +490,12 @@ func (m *wafSystenService) run() {
 					globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.RemoveHost(host)
 					globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.LoadHost(host)
 					globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.StartAllProxyServer()
+					break
+				case enums.ChanTypeBlockingPage:
+					globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.HostTarget[globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.HostCode[msg.HostCode]].Mux.Lock()
+					globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.HostTarget[globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.HostCode[msg.HostCode]].BlockingPage = msg.Content.(map[string]model.BlockingPage)
+					zlog.Debug("远程配置", zap.Any("配置自定义拦截界面信息", msg.Content.(map[string]model.BlockingPage)))
+					globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.HostTarget[globalobj.GWAF_RUNTIME_OBJ_WAF_ENGINE.HostCode[msg.HostCode]].Mux.Unlock()
 					break
 				}
 
