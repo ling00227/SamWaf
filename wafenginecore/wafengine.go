@@ -25,7 +25,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	goahocorasick "github.com/anknown/ahocorasick"
+	goahocorasick "github.com/samwafgo/ahocorasick"
 	"github.com/satori/go.uuid"
 	"go.uber.org/zap"
 	"golang.org/x/net/html/charset"
@@ -239,6 +239,8 @@ func (waf *WafEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			NetSrcIp:             utils.GetSourceClientIP(r.RemoteAddr),
 			SrcByteBody:          bodyByte,
 			WebLogVersion:        global.GWEBLOG_VERSION,
+			Scheme:               r.Proto,
+			SrcURL:               []byte(r.RequestURI),
 		}
 
 		formValues := url.Values{}
@@ -469,6 +471,8 @@ func (waf *WafEngine) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			TimeSpent:            0,
 			NetSrcIp:             utils.GetSourceClientIP(r.RemoteAddr),
 			WebLogVersion:        global.GWEBLOG_VERSION,
+			Scheme:               r.Proto,
+			SrcURL:               []byte(r.RequestURI),
 		}
 
 		//记录响应body
@@ -540,7 +544,6 @@ func (waf *WafEngine) errorResponse() func(http.ResponseWriter, *http.Request, e
 func (waf *WafEngine) modifyResponse() func(*http.Response) error {
 	return func(resp *http.Response) error {
 		resp.Header.Set("X-Xss-Protection", "1; mode=block")
-
 		r := resp.Request
 		if wafHttpContext, ok := r.Context().Value("waf_context").(innerbean.WafHttpContextData); ok {
 			weblogfrist := wafHttpContext.Weblog
@@ -586,61 +589,58 @@ func (waf *WafEngine) modifyResponse() func(*http.Response) error {
 			//返回内容的类型
 			respContentType := resp.Header.Get("Content-Type")
 			respContentType = strings.Replace(respContentType, "; charset=utf-8", "", -1)
-			contentType := ""
-			//JS情况
-			if respContentType == "application/javascript" {
-				contentType = "js"
-			}
-			//CSS情况
-			if respContentType == "text/css" {
-				contentType = "css"
-			}
-			//图片情况
-			if respContentType == "image/jpeg" || respContentType == "image/png" ||
-				respContentType == "image/gif" || respContentType == "image/x-icon" {
-				contentType = "img"
-			}
-			//文本资源
-			if respContentType == "text/html" || respContentType == "application/html" ||
-				respContentType == "application/json" || respContentType == "application/xml" || respContentType == "text/plain" {
-				contentType = "text"
-			}
+
 			//记录静态日志
-			isStaticAssist := false
-			isText := false
-			switch contentType {
-			case "js":
-				isStaticAssist = true
-				break
-			case "css":
-				isStaticAssist = true
-				break
-			case "img":
-				isStaticAssist = true
-				break
-			case "text":
-				isText = true
-				break
-			default:
-				/*weblogbean.ACTION = "放行"
-				global.GQEQUE_LOG_DB.PushBack(weblogbean)*/
-			}
+			isStaticAssist := utils.IsStaticAssist(respContentType)
+			isText := utils.IsContent(respContentType)
 
 			//记录响应body
-			if isText && resp.Body != nil && resp.Body != http.NoBody && global.GCONFIG_RECORD_RESP == 1 {
+			if isText && resp.Body != nil && resp.Body != http.NoBody {
 
-				//编码转换，自动检测网页编码
+				//编码转换，自动检测网页编码   resp *http.Response
 				orgContentBytes, _ := waf.getOrgContent(resp)
+
+				if global.GCONFIG_RECORD_RESP == 1 {
+					if resp.ContentLength < global.GCONFIG_RECORD_MAX_RES_BODY_LENGTH {
+						weblogfrist.RES_BODY = string(orgContentBytes)
+						weblogfrist.SrcByteResBody = orgContentBytes
+					}
+				}
+
+				//处理敏感词
+				if waf.CheckResponseSensitive() {
+					//敏感词检测
+					matchBodyResult := waf.SensitiveManager.MultiPatternSearch([]rune(string(orgContentBytes)), false)
+					if len(matchBodyResult) > 0 {
+						sensitive := matchBodyResult[0].CustomData.(model.Sensitive)
+
+						if sensitive.CheckDirection != "in" {
+							weblogfrist.RISK_LEVEL = 1
+							if sensitive.Action == "deny" {
+								EchoResponseErrorInfo(resp, *weblogfrist, "敏感词检测："+string(matchBodyResult[0].Word), "敏感词内容", waf.HostTarget[host], waf.HostTarget[waf.HostCode[global.GWAF_GLOBAL_HOST_CODE]], true)
+								return nil
+
+							} else {
+								words := processSensitiveWords(matchBodyResult, "in")
+								weblogfrist.GUEST_IDENTIFICATION = "触发敏感词"
+								weblogfrist.RULE = "敏感词检测：" + strings.Join(words, ",")
+								for _, word := range words {
+									orgContentBytes = bytes.ReplaceAll(orgContentBytes, []byte(word), []byte(global.GWAF_HTTP_SENSITIVE_REPLACE_STRING))
+
+								}
+							}
+						}
+
+					}
+				}
+
 				finalCompressBytes, _ := waf.compressContent(resp, orgContentBytes)
 				resp.Body = io.NopCloser(bytes.NewBuffer(finalCompressBytes))
 
 				// head 修改追加内容
 				resp.ContentLength = int64(len(finalCompressBytes))
 				resp.Header.Set("Content-Length", strconv.FormatInt(int64(len(finalCompressBytes)), 10))
-				if resp.ContentLength < global.GCONFIG_RECORD_MAX_RES_BODY_LENGTH {
-					weblogfrist.RES_BODY = string(orgContentBytes)
-					weblogfrist.SrcByteResBody = orgContentBytes
-				}
+
 			}
 			zlog.Debug("TESTChanllage", weblogfrist.HOST, weblogfrist.URL)
 			if !isStaticAssist {

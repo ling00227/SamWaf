@@ -1,11 +1,15 @@
 package wafenginecore
 
 import (
+	"SamWaf/global"
 	"SamWaf/innerbean"
+	"SamWaf/model"
 	"SamWaf/model/detection"
 	"SamWaf/model/wafenginmodel"
+	goahocorasick "github.com/samwafgo/ahocorasick"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 /*
@@ -22,30 +26,66 @@ func (waf *WafEngine) CheckSensitive(r *http.Request, weblogbean *innerbean.WebL
 	if len(waf.Sensitive) == 0 {
 		return result
 	}
+	if !waf.CheckRequestSensitive() {
+		return result
+	}
 	//敏感词检测
-	matchURLResult := waf.SensitiveManager.MultiPatternSearch([]rune(weblogbean.URL), true)
+	matchURLResult := waf.SensitiveManager.MultiPatternSearch([]rune(weblogbean.URL), false)
 	if len(matchURLResult) > 0 {
+		sensitive := matchURLResult[0].CustomData.(model.Sensitive)
+		if sensitive.CheckDirection == "out" {
+			return result
+		}
 		weblogbean.RISK_LEVEL = 1
-		result.IsBlock = true
-		result.Title = "敏感词检测：" + string(matchURLResult[0].Word)
-		result.Content = "敏感词内容"
+		if sensitive.Action == "deny" {
+			result.IsBlock = true
+			result.Title = "敏感词检测：" + string(matchURLResult[0].Word)
+			result.Content = "敏感词内容"
+		} else {
+			words := processSensitiveWords(matchURLResult, "out")
+			result.IsBlock = false
+			weblogbean.GUEST_IDENTIFICATION = "触发敏感词"
+			weblogbean.RULE = "敏感词检测：" + string(matchURLResult[0].Word)
+			waf.ReplaceURLContent(r, words, global.GWAF_HTTP_SENSITIVE_REPLACE_STRING)
+		}
+
 		return result
 	}
-	matchBodyResult := waf.SensitiveManager.MultiPatternSearch([]rune(weblogbean.BODY), true)
+	matchBodyResult := waf.SensitiveManager.MultiPatternSearch([]rune(weblogbean.BODY), false)
 	if len(matchBodyResult) > 0 {
+		sensitive := matchBodyResult[0].CustomData.(model.Sensitive)
+		if sensitive.CheckDirection == "out" {
+			return result
+		}
 		weblogbean.RISK_LEVEL = 1
-		result.IsBlock = true
-		result.Title = "敏感词检测：" + string(matchBodyResult[0].Word)
-		result.Content = "敏感词内容"
-		return result
-	}
-	matchPostFromResult := waf.SensitiveManager.MultiPatternSearch([]rune(weblogbean.POST_FORM), true)
-	if len(matchPostFromResult) > 0 {
-		weblogbean.RISK_LEVEL = 1
-		result.IsBlock = true
-		result.Title = "敏感词检测：" + string(matchPostFromResult[0].Word)
-		result.Content = "敏感词内容"
+		if sensitive.Action == "deny" {
+			result.IsBlock = true
+			result.Title = "敏感词检测：" + string(matchBodyResult[0].Word)
+			result.Content = "敏感词内容"
+		} else {
+			words := processSensitiveWords(matchBodyResult, "out")
+			result.IsBlock = false
+			weblogbean.GUEST_IDENTIFICATION = "触发敏感词"
+			weblogbean.RULE = "敏感词检测：" + strings.Join(words, ",")
+			waf.ReplaceBodyContent(r, words, global.GWAF_HTTP_SENSITIVE_REPLACE_STRING)
+		}
 		return result
 	}
 	return result
+}
+
+// 排除某个
+func processSensitiveWords(input []*goahocorasick.Term, except string) []string {
+
+	var replaceStrings []string
+	for _, term := range input {
+		sensitive := term.CustomData.(model.Sensitive)
+		if sensitive.CheckDirection == except {
+			continue
+		}
+		if sensitive.Action == "replace" {
+			replaceStrings = append(replaceStrings, sensitive.Content)
+		}
+	}
+	return replaceStrings
 }
